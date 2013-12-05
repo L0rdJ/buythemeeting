@@ -1,0 +1,5 @@
+nbproject
+cache/compile/*
+cache/vk/*
+!cache/compile/empty
+!cache/vk/empty
