@@ -106,6 +106,57 @@ class Index extends Base
 		);
 	}
 
+	public function doExport() {
+		Settings::set( 'vk/cache/ttl', -1 );
+		$PHPExcel = new \PHPExcel();
+
+		$PHPExcel->setActiveSheetIndex( 0 );
+		$PHPExcel->getActiveSheet()->setTitle( 'Simple' );
+
+		$sheet  = 0;
+		$albums = $this->getAlbums();
+		foreach( $albums as $album ) {
+			$album = $this->processAlbum( $album );
+
+			if( $sheet !== 0 ) {
+				$PHPExcel->createSheet();
+			}
+			$PHPExcel->setActiveSheetIndex( $sheet );
+			$PHPExcel->getActiveSheet()->setTitle( $album['title'] );
+
+			$excelSheet = $PHPExcel->getActiveSheet();
+			$photoIndex = 1;
+			foreach( $album['photos'] as $photo ) {
+				$photoURL = 'http://vk.com/photo-' . abs( $photo['owner_id'] ) . '_' . $photo['pid'];
+				$buyerURL = $photo['current_comment'] !== null
+					? 'http://vk.com/id' . $photo['current_comment']['from_id']
+					: '';
+				if( (int) $photo['current_comment']['from_id'] == 101 ) {
+					$buyerURL = str_replace( '<br>', ' ', $photo['current_comment']['message'] );
+				}
+
+				$excelSheet->setCellValue( 'A' . $photoIndex, $photo['info']['number'] );
+				$excelSheet->setCellValue( 'B' . $photoIndex, $photoURL );
+				$excelSheet->setCellValue( 'C' . $photoIndex, $photo['current_bid'] );
+				$excelSheet->setCellValue( 'D' . $photoIndex, $buyerURL );
+
+				$photoIndex++;
+			}
+
+			$sheet++;
+		}
+
+		$PHPExcel->setActiveSheetIndex( 0 );
+		$writer = new \PHPExcel_Writer_Excel2007( $PHPExcel );
+		//$writer->save( Settings::get( 'vk/export_file' ) );
+		header( 'Content-Type: application/vnd.ms-excel; charset=utf-8' );
+		header( 'Content-Disposition: attachment; filename=export.xlsx' );
+		header( 'Expires: 0' );
+		header( 'Cache-Control: must-revalidate, post-check=0, pre-check=0' );
+		header( 'Cache-Control: private', false );
+		$writer->save( 'php://output' );
+	}
+
 	private function getAlbums( $withPhotos = true ) {
 		$r = $this->API->request( 'photos.getAlbums', array( 'gid' => Settings::get( 'vk/options/gid' ) ) );
 		if( isset( $r['error'] ) ) {
@@ -185,7 +236,14 @@ class Index extends Base
 			'url'       => isset( $info[2] ) ? $info[2] : null,
 			'desc'      => count( $info ) > 3 ? implode( '<br>', array_slice( $info, 3 ) ) : null,
 			'full_desc' => count( $info ) > 2 ? implode( '<br>', array_slice( $info, 2 ) ) : null,
+			'url'       => null
 		);
+		foreach( $info as $line ) {
+			if( strpos( $line, 'vk.com' ) !== false ) {
+				$photo['info']['url'] = strpos( $line, 'http' ) === false ? 'http://' . $line : $line;
+				break;
+			}
+		}
 
 		if(
 			$photo['info']['url'] !== null
@@ -217,6 +275,7 @@ class Index extends Base
 						$bid == $expectedBid
 						|| (
 							(int) $bid !== (int) Settings::get( 'vk/options/bid_step' )
+							&& (int) $bid % (int) Settings::get( 'vk/options/bid_step' ) === 0
 							&& in_array( $comment['from_id'], Settings::get( 'vk/options/bid_admins' ) )
 						)
 					) {
@@ -285,6 +344,6 @@ class Index extends Base
 		$albums = $this->getAlbums();
 		foreach( $albums as $album ) {
 			$this->processAlbum( $album );
-		}	
+		}
 	}
 }

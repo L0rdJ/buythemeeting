@@ -39,7 +39,8 @@ abstract class Settings
 			'token'          => array(
 				'token'   => 'c00adbe1b9234f3220b01da8d9787f10e5668bcc7528f455553a9e1e8c20a306499352ce651639010dc8a',
 				'user_id' => 2249078
-			)
+			),
+			'export_file'    => 'cache/vk/export.xlsx'
 		)
 	);
 

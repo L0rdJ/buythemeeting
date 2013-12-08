@@ -13,6 +13,8 @@ return array(
 	'AnotherOne\Utils\Settings'          => 'utils/settings.php',
 	'AnotherOne\Utils\VK'                => 'utils/vk.php',
 	// Smarty
-	'Smarty'                             => 'lib/smarty/Smarty.class.php'
+	'Smarty'                             => 'lib/smarty/Smarty.class.php',
+	// PHPExcel
+	'PHPExcel'                           => 'lib/phpexcel/PHPExcel.php'
 );
 
