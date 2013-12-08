@@ -68,6 +68,10 @@ class VK
 			file_exists( $filename ) == false
 			|| ( filemtime( $filename ) + $cacheTTL ) < time()
 		) {
+			if( PHP_SAPI === 'cli' ) {
+				echo $method . '?' . http_build_query( $params ) . PHP_EOL;
+			}
+
 			$ch = curl_init();
 			curl_setopt( $ch, CURLOPT_HEADER, false );
 			curl_setopt( $ch, CURLOPT_RETURNTRANSFER, true );
@@ -78,9 +82,12 @@ class VK
 			if( $data === false ) {
 				throw new Exception( curl_error( $ch ) );
 			} else {
-				$response = $data;
+				$response = json_decode( $data, true );
 				file_put_contents( $filename, $data );
+				@chmod( $filename, 0777 );
 			}
+
+			usleep( (int) Settings::get( 'vk/requests_delay' ) );
 		}
 
 		if( $response === null ) {

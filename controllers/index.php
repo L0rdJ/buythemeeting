@@ -26,7 +26,16 @@ class Index extends Base
 		$this->API = VK::getInstance();
 		$this->API->setClientID( Settings::get( 'vk/app_id' ) );
 
-		$token        = $this->getVKToken();
+		$token = $this->getVKToken();
+		// Setting default token
+		if( $token === null ) {
+			$this->setVKToken(
+				Settings::get( 'vk/token/token' ),
+				Settings::get( 'vk/token/user_id' ),
+				0
+			);
+			$token = $this->getVKToken();
+		}
 		$isTokenValid = true;
 		if( is_array( $token ) && isset( $token['access_token'] ) ) {
 			// validate token
@@ -97,10 +106,6 @@ class Index extends Base
 		);
 	}
 
-	public function doPhoto() {
-
-	}
-
 	private function getAlbums( $withPhotos = true ) {
 		$r = $this->API->request( 'photos.getAlbums', array( 'gid' => Settings::get( 'vk/options/gid' ) ) );
 		if( isset( $r['error'] ) ) {
@@ -113,7 +118,7 @@ class Index extends Base
 				$albums[ $album['aid'] ] = $album;
 			}
 		}
-		//$albums = array_reverse( $albums );
+		$albums = array_reverse( $albums );
 
 		if( $withPhotos ) {
 			foreach( $albums as $i => $album ) {
@@ -274,5 +279,12 @@ class Index extends Base
 			'ttl'          => $expiresIn,
 			'created_on'   => time()
 		);
+	}
+
+	public function cronjob() {
+		$albums = $this->getAlbums();
+		foreach( $albums as $album ) {
+			$this->processAlbum( $album );
+		}	
 	}
 }

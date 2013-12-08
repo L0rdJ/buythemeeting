@@ -38,9 +38,15 @@
 	
 	{block name=content}{/block}
 
+	<div class="container">
+		<p>Бажаєш довідатись рецептів і заклинань, за допомгою котрих було створенно цей магічний додаток? Тобі сюди: <a href="https://github.com/L0rdJ/buythemeeting">https://github.com/L0rdJ/buythemeeting</a>.</p>
+	</div>
+	
 	<script src="//ajax.googleapis.com/ajax/libs/jquery/2.0.3/jquery.min.js"></script>
-	<script src="//cdn.jsdelivr.net/isotope/1.5.25/jquery.isotope.min.js"></script>
 	<script type="text/javascript" src="vendor/bootstrap/js/tab.js"></script>
+	<script type="text/javascript" src="vendor/bootstrap/js/tooltip.js"></script>
+	<script type="text/javascript" src="vendor/masonry/js/masonry.min.js"></script>
+	<script type="text/javascript" src="vendor/imagesloaded/js/imagesloaded.min.js"></script>
 	{block name=js}{/block}
 </body>
 </html>
